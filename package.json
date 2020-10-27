@@ -1,0 +1,22 @@
+{
+  "name": "fazentech_api",
+  "version": "1.0.0",
+  "description": "RestAPI para o backend do aplicativo de e-commerce fazentech para portifólio 6 do curso de Análise e Desenvolvimento de Sistemas da Unopar",
+  "main": "app/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app/app.js"
+  },
+  "author": "HenriqueFelixDev",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^5.0.0",
+    "express": "^4.17.1",
+    "jsonwebtoken": "^8.5.1",
+    "knex": "^0.21.6",
+    "mysql2": "^2.2.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.6"
+  }
+}
