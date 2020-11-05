@@ -14,7 +14,6 @@ admin.initializeApp({
 const categoryController = require('./controllers/category_controller');
 const productController = require('./controllers/product_controller');
 const userController = require('./controllers/user_controller');
-const authController = require('./controllers/auth_controller');
 const orderController = require('./controllers/order_controller');
 const cartController = require('./controllers/cart_controller');
 
@@ -26,7 +25,6 @@ app.use(express.urlencoded());
 app.use('/categories', categoryController);
 app.use('/products', productController);
 app.use('/user', userController);
-app.use('/auth', authController);
 app.use('/orders', authMiddleware, orderController);
 app.use('/cart', authMiddleware, cartController);
 
