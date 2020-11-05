@@ -1,37 +1,39 @@
 const router = require('express').Router();
+const {validationResult} = require('express-validator');
+
+const productFilterValidator = require('../domain/validators/product_filter_validator');
 const productRepository = require('../repositories/product_repository');
 const ResourceNotFoundException = require('../exceptions/resource_not_found_exception');
+const InvalidArgumentException = require('../exceptions/invalid_argument_exception');
 
+router.get('/', productFilterValidator, async (req, res, next) => {
+    try {
+        const errors = validationResult(req);
 
-const getProductImages = async productId => {
-    let productImages = await productRepository.getProductImages(productId);
-    return productImages.map(productImage => productImage.image);
-}
+        if(!errors.isEmpty()) {
+            throw new InvalidArgumentException(errors.array());
+        }
 
-router.get('/', async (req, res) => {
-    const {search, minPrice, maxPrice, categories, limit, offset} = req.query;
+        const {search, minPrice, maxPrice, categories, limit, offset} = req.query;
 
-    let categoriesList;
-    if(categories) {
-        categoriesList = JSON.parse(categories)
-    }
+        let categoriesList;
+        if(categories) {
+            categoriesList = JSON.parse(categories)
+        }
+        
+        let products = await productRepository.getAllProducts({
+            search, 
+            minPrice, 
+            maxPrice, 
+            categories: categoriesList, 
+            limit, 
+            offset
+        });
     
-    let products = await productRepository.getAllProducts({
-        search, 
-        minPrice, 
-        maxPrice, 
-        categories: categoriesList, 
-        limit, 
-        offset
-    });
-
-    let returnedProducts = [];
-    for(let product of products) {
-        product.images = await getProductImages(product.id);
-        returnedProducts.push(product);
+        res.json(products);
+    } catch(e) {
+        next(e);
     }
-
-    res.json(returnedProducts);
 });
 
 router.get('/:id([0-9]+)', async (req, res, next) => {
@@ -41,41 +43,33 @@ router.get('/:id([0-9]+)', async (req, res, next) => {
         if(!product) {
             throw new ResourceNotFoundException(`Nenhum produto com o id ${id} foi encontrado`);
         }
-        product.images = await getProductImages(id);
         res.json(product);
     } catch (e) {
         next(e);
     }
 });
 
-router.get('/top', async (req, res) => {
-    const productsLimit = 10;
-    let resultProducts = await productRepository.getTopProducts(productsLimit);
-
-    if(resultProducts.length < productsLimit) {
-        resultProducts = await productRepository.getRandomProducts(productsLimit);
-    }
-    let products = [];
-    for(let product of resultProducts) {
-        product.images = await getProductImages(product.id);
-        products.push(product);
-    }
-
-    res.json(products);
-});
-
-router.get('/recently-added', async (req, res) => {
+router.get('/top', async (req, res, next) => {
     try {
-        let productsResult = await productRepository.getRecentlyAddedProducts();
-        let products = [];
-        for(let product of productsResult) {
-            product.images = await getProductImages(product.id);
-            products.push(product);
+        const productsLimit = 10;
+        let products = await productRepository.getTopProducts(productsLimit);
+    
+        if(products.length < productsLimit) {
+            products = await productRepository.getRandomProducts(productsLimit);
         }
+    
         res.json(products);
     } catch(e) {
-        console.log(e);
-        res.json({error: e});
+        next(e);
+    }
+});
+
+router.get('/recently-added', async (req, res, next) => {
+    try {
+        let products = await productRepository.getRecentlyAddedProducts();
+        res.json(products);
+    } catch(e) {
+        next(e);
     }
 });
 

@@ -1,9 +1,10 @@
 const DefaultException = require("./default_exception");
 
 class InvalidArgumentException extends DefaultException {
-    constructor(message) {
+    constructor(errors = [], message = 'Alguns parâmetros estão incorretos') {
         super(400, message);
         this.message = message;
+        this.errors = errors;
     }
 }
 

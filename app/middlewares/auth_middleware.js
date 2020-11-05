@@ -1,20 +1,26 @@
 const router = require('express').Router();
-const UserUnauthorizedException = require('../exceptions/user/user_unauthorized_exception');
-const authService = require('../services/authentication_service');
 
-router.all('*', (req, res, next) => {
+const authService = require('../domain/services/authentication_service_firebase');
+const userRepository = require('../repositories/user_repository');
+const UserUnauthorizedException = require('../exceptions/user/user_unauthorized_exception');
+
+router.all('*', async (req, res, next) => {
     const authorization = req.header('Authorization');
 
-    if(authorization != null) {
-        const jwt = authorization.replace('Bearer ', '');
-        if(authService.validateJWT(jwt)) {
-            const userData = authService.decodeJWT(jwt);
-            req.userId = userData.uid;
-            next();
-            return;
+    try {
+        if(authorization != null) {
+            const jwt = authorization.replace('Bearer ', '');
+            if(await authService.validateJWT(jwt)) {
+                const userData = await authService.decodeJWT(jwt);
+                const {user_id} = await userRepository.getUserIdByFirebaseId(userData.uid);
+                req.userId = user_id;
+                return next();
+            }
         }
+        throw new UserUnauthorizedException('Usuário não autenticado');
+    } catch(e) {
+        next(e);
     }
-    throw new UserUnauthorizedException('Usuário não autenticado');
 });
 
 module.exports = router;

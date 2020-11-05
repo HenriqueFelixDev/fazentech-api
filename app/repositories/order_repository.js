@@ -1,31 +1,59 @@
 const knex = require('../database/knex_connection');
+const productRepository = require('../repositories/product_repository');
 
-const getUserOrderById = (userId, orderId) => {
-    return knex.select(
-        'orders.id', 'orders.created_in', 'orders.status'
-    ).from('orders')
-    .where({
-        id: orderId,
-        user_id: userId
-    })
-    .first();
+const getOrderProductsWithProducts = async orderProductsList => {
+    const orderProducts = [];
+    for(let orderProduct of orderProductsList) {
+        const product = await productRepository.getProductById(orderProduct.product_id);
+        orderProduct.product = product;
+        delete orderProduct.product_id;
+        delete orderProduct.order_id;
+        orderProducts.push(orderProduct);       
+    }
+    return orderProducts;
 }
 
-const getOrderProducts = (orderId) => 
-    knex
-        .select(
-            'products.id', 'products.category_id', 'products.name', 'products.description', 
-            'products.price as current_price', 'order_products.quantity', 'order_products.price'
-        )
-        .from('order_products')
-        .leftJoin('products', 'order_products.product_id', '=', 'products.id')
-        .whereRaw('?? = ??', ['order_products.order_id', orderId]);
+const getOrdersWithOrderProducts = async ordersList => {
+    const orders = [];
+    for(const order of ordersList) {
+        order.products = await getOrderProducts(order.id);
+        delete order.user_id;
+        orders.push(order);
+    }
+    return orders;
+}
 
-const getUserOrders = userId => {
-    return knex.select(
-        'orders.id', 'orders.created_in', 'orders.status'
-    ).from('orders')
-    .where('orders.user_id', '=', userId);
+const getUserOrderById = async (userId, orderId) => {
+    const orders = await knex.select()
+        .from('orders')
+        .where({
+            id: orderId,
+            user_id: userId
+        })
+        .first();
+    
+    return await getOrdersWithOrderProducts(orders);
+}
+
+const getOrderProducts = async orderId => {
+    const orderProducts = await knex
+        .select()
+        .from('order_products')
+        .where({order_id: orderId});
+    return await getOrderProductsWithProducts(orderProducts);
+}
+
+const getUserOrders = async (userId, filter = {}) => {
+    filter.user_id = userId;
+    const ordersResult = await knex.select()
+        .from('orders')
+        .where(filter);
+
+    if(!ordersResult || ordersResult.length == 0) {
+        return null;
+    }
+    
+    return await getOrdersWithOrderProducts(ordersResult);
 }
 
 module.exports = {

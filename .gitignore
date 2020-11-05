@@ -1,0 +1,4 @@
+.env
+fazentech_secret_key.json
+docker/mysql_volume
+node_modules/

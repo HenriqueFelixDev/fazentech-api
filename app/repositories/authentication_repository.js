@@ -1,4 +1,18 @@
+const admin = require('firebase-admin');
+
 const knex = require('../database/knex_connection');
+
+const createFirebaseUser = async (email, cellphone, password, name) => {
+    const user = await admin.auth().createUser({
+        email: email,
+        emailVerified: false,
+        password: password,
+        displayName: name,
+        phoneNumber: cellphone
+    });
+
+    return user.uid;
+}
 
 const updateRefreshToken = async (userId, refreshToken) =>
     knex('users')
@@ -18,6 +32,7 @@ const getRefreshToken = async userId =>
         .first();
 
 module.exports = {
+    createFirebaseUser,
     saveRefreshToken,
     deleteRefreshToken,
     getRefreshToken

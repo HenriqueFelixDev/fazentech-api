@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const authenticationRepository = require('../repositories/authentication_repository');
+const authenticationRepository = require('../../repositories/authentication_repository');
 
-const secret = '7a34bf417c170b14770cab0bbfe884d2';
+const secret = process.env.AUTH_SECRET;
 
 const generateJWT = (data, expiresIn) => {
     return jwt.sign(data, secret, {expiresIn: expiresIn});
