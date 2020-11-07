@@ -63,15 +63,26 @@ const deleteCartProduct = async (userId, productId) => {
         .del();
 }
 
-const saveCartOnOrders = userId => 
-    knex('orders')
+const updateCart = async (userId, cart) => {
+    const cartId = await getCartId(userId);
+
+    return knex('orders')
+        .update(cart)
+        .where({id: cartId});
+}
+
+const saveCartOnOrders = async userId => {
+    const cartId = await getCart(userId);
+    return knex('orders')
         .update({status: 'complete_purchase'})
-        .where({user_id: userId, status: 'buying'});
+        .where({id: cartId});
+}
 
 module.exports = {
     getCart,
     addProductOnCart,
     updateCartProduct,
     deleteCartProduct,
-    saveCartOnOrders
+    saveCartOnOrders,
+    updateCart
 }
