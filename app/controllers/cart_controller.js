@@ -5,6 +5,7 @@ const cartRepository = require('../repositories/cart_repository');
 const cartValidator = require('../domain/validators/cart_validator');
 
 const InvalidArgumentException = require('../exceptions/invalid_argument_exception');
+const { saveCartOnOrders } = require('../repositories/cart_repository');
 
 router.get('/', async (req, res, next) => {
     try {
@@ -54,6 +55,15 @@ router.delete('/products/:id([0-9]+)', async (req, res, next) => {
     try {
         const {id} = req.params;
         await cartRepository.deleteCartProduct(req.userId, id);
+        res.status(204).send();
+    } catch(e) {
+        next(e);
+    }
+});
+
+router.post('/confirm', async (req, res, next) => {
+    try {
+        await saveCartOnOrders(req.userId);
         res.status(204).send();
     } catch(e) {
         next(e);
