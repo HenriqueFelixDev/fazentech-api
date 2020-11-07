@@ -27,7 +27,7 @@ const validationChain = checkSchema({
     rg: {
         matches: {
             errorMessage: 'RG inválido',
-            options: /\d{2}\.?(\d{3}\.?){2}-?\d{2}/
+            options: /\d{2}\.?(\d{3}\.?){2}(-?\d{1,2})?/
         }
     },
     password: {
@@ -37,6 +37,15 @@ const validationChain = checkSchema({
         }
     },
     birthday: {
+        customSanitizer: {
+            options: value => {
+                const dateRegex = /(\d{4})-(\d{2})-(\d{2})(.+)/
+                if(value && dateRegex.test(value)) {
+                    return value.replace(dateRegex, '$1-$2-$3');
+                }
+                return null;
+            }
+        },
         isDate: {
             errorMessage: 'Formato de data inválido'
         },
@@ -59,6 +68,9 @@ const validationChain = checkSchema({
         }
     },
     'address.state': {
+        customSanitizer: {
+            options: value => value ? value.toUpperCase() : null
+        },
         isIn: {
             errorMessage: 'Estado inválido',
             options: [

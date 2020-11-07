@@ -3,21 +3,21 @@ const {checkSchema} = require('express-validator');
 const validationChain = checkSchema({
     minPrice: {
         optional: {options: {checkFalsy: true}},
-        isCurrency: {
-            errorMessage: 'Preço mínimo não é um valor monetário válido',
+        isFloat: {
+            errorMessage: 'O preço mínimo não é um valor monetário válido',
             options: {allow_negatives: false}
         }
     }, 
     maxPrice: {
         optional: {options: {checkFalsy: true}},
-        isCurrency: {
-            errorMessage: 'Preço máximo não é um valor monetário',
+        isFloat: {
+            errorMessage: 'O preço máximo não é um valor monetário válido',
             options: {allow_negatives: false}
         }
     }, 
-    categories: {
+    'categories.*': {
         optional: {options: {checkFalsy: true}},
-        isArray: {
+        isInt: {
             errorMessage: 'As categorias informadas devem ser uma lista de códigos das categorias'
         }
     }, 
