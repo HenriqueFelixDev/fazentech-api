@@ -72,7 +72,7 @@ const updateCart = async (userId, cart) => {
 }
 
 const saveCartOnOrders = async userId => {
-    const cartId = await getCart(userId);
+    const cartId = await getCartId(userId);
     return knex('orders')
         .update({status: 'complete_purchase'})
         .where({id: cartId});
